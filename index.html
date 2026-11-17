@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel de Metas – Serraf</title>
+<style>
+  :root{
+    --bg:#eef1f8;--card:#ffffff;--text:#1b2234;--muted:#6f7a90;--line:#e4e8f1;
+    --store:#2f6bff;--store2:#6aa0ff;--pers:#10b981;--pers2:#6ee7b7;
+    --gold:#f59e0b;--low:#f43f5e;--shadow:0 6px 24px rgba(30,45,90,.08);
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --bg:#0e1220;--card:#171d30;--text:#eaeefa;--muted:#8f9bb5;--line:#26304a;--shadow:0 6px 24px rgba(0,0,0,.35);
+  }}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text)}
+  .wrap{max-width:980px;margin:0 auto;padding:16px 16px 60px}
+  .hero{background:linear-gradient(135deg,#2f6bff,#7c3aed);color:#fff;border-radius:20px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+  .hero-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  .hero h1{margin:0;font-size:1.25rem}
+  .hero .who{opacity:.85;font-size:.9rem}
+  .nav{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.16);border-radius:99px;padding:4px}
+  .nav button{background:transparent;border:0;color:#fff;font-size:1.1rem;width:34px;height:34px;border-radius:99px;cursor:pointer}
+  .nav button:hover{background:rgba(255,255,255,.2)}
+  .nav span{min-width:130px;text-align:center;font-weight:600;text-transform:capitalize}
+  .msg{margin-top:14px;font-size:1.05rem;font-weight:600}
+  .msg small{display:block;font-weight:400;opacity:.85;margin-top:2px}
+
+  .card{background:var(--card);border-radius:18px;padding:16px;box-shadow:var(--shadow);margin-bottom:16px}
+  .card h2{font-size:.95rem;margin:0 0 12px;display:flex;justify-content:space-between;align-items:center}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:700px){.grid2{grid-template-columns:1fr}}
+
+  .goal{display:flex;gap:16px;align-items:center}
+  .ring{position:relative;width:128px;height:128px;flex:none}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .ring .c b{font-size:1.5rem}
+  .ring .c span{font-size:.7rem;color:var(--muted)}
+  .goal-info{flex:1;min-width:0}
+  .goal-info .t{font-size:.75rem;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+  .goal-info .v{font-size:1.35rem;font-weight:700;margin:2px 0 8px}
+  .kv{display:flex;justify-content:space-between;gap:8px;font-size:.85rem;padding:3px 0}
+  .kv span:first-child{color:var(--muted)}
+  .ok{color:var(--pers)}.no{color:var(--low)}
+
+  .entry{display:grid;grid-template-columns:1fr 1.4fr auto;gap:10px;align-items:end}
+  @media (max-width:560px){.entry{grid-template-columns:1fr}}
+  label{display:flex;flex-direction:column;gap:4px;font-size:.78rem;color:var(--muted)}
+  input,select{font:inherit;padding:11px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--text);width:100%}
+  input:focus,select:focus{outline:2px solid var(--store);border-color:transparent}
+  .money{font-size:1.25rem;font-weight:700}
+  .btn{font:inherit;font-weight:700;padding:12px 20px;border-radius:12px;border:0;color:#fff;cursor:pointer;background:linear-gradient(135deg,var(--store),#7c3aed)}
+  .btn:active{transform:scale(.98)}
+  .btn.sec{background:transparent;color:var(--text);border:1.5px solid var(--line);font-weight:600;padding:9px 14px}
+  .hint{font-size:.78rem;color:var(--muted);margin-top:8px}
+  .linkbtn{background:none;border:0;color:var(--low);cursor:pointer;font:inherit;font-size:.8rem}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  @media (max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:var(--bg);border-radius:14px;padding:12px}
+  .stat .l{font-size:.72rem;color:var(--muted)}
+  .stat .n{font-size:1.05rem;font-weight:700;margin-top:2px}
+
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+  .dow{font-size:.7rem;color:var(--muted);text-align:center;padding-bottom:2px}
+  .day{aspect-ratio:1/.95;border-radius:12px;padding:5px 6px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;border:2px solid transparent;font-size:.7rem;background:var(--bg);min-width:0}
+  .day .d{font-weight:600;color:var(--muted)}
+  .day .val{font-weight:700;font-size:.8rem;text-align:right}
+  .day.off{opacity:.35;cursor:default}
+  .day.empty{background:transparent;cursor:default}
+  .day.miss{border-color:var(--line);border-style:dashed}
+  .day.low{background:rgba(244,63,94,.14)}.day.low .val{color:var(--low)}
+  .day.good{background:rgba(47,107,255,.16)}.day.good .val{color:var(--store)}
+  .day.gold{background:rgba(16,185,129,.2)}.day.gold .val{color:var(--pers)}
+  .day.today{border-color:var(--store)}
+  .day.sel{outline:2px solid var(--text)}
+  .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.75rem;color:var(--muted);margin-top:10px}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+
+  svg.chart{width:100%;height:auto;display:block}
+  .chart text{fill:var(--muted);font-size:10px}
+  .weeks{display:grid;gap:10px}
+  .wk{background:var(--bg);border-radius:14px;padding:12px}
+  .wk-top{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:6px;gap:8px;flex-wrap:wrap}
+  .bar{height:9px;background:var(--line);border-radius:99px;overflow:hidden;position:relative;margin:5px 0}
+  .bar>div{height:100%;border-radius:99px}
+  .tag{font-size:.68rem;padding:2px 8px;border-radius:99px;background:var(--store);color:#fff;margin-left:6px}
+  details summary{cursor:pointer;font-weight:600;font-size:.95rem}
+  .form3{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:12px}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(80px);background:#111827;color:#fff;padding:10px 18px;border-radius:99px;font-weight:600;transition:.3s;opacity:0;z-index:9}
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="hero-top">
+      <div>
+        <h1>🎯 Painel de Metas – Serraf</h1>
+        <div class="who" id="who"></div>
+      </div>
+      <div class="nav">
+        <button id="prev" aria-label="Mês anterior">‹</button>
+        <span id="mesLabel"></span>
+        <button id="next" aria-label="Próximo mês">›</button>
+      </div>
+    </div>
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <div class="card">
+    <h2>✍️ Lançar vendas do dia</h2>
+    <form class="entry" id="form">
+      <label>Data<input type="date" id="fData" required></label>
+      <label>Total vendido no dia (R$)<input type="number" class="money" id="fValor" inputmode="decimal" min="0" step="0.01" placeholder="0,00" required></label>
+      <button class="btn" type="submit">Salvar</button>
+    </form>
+    <div class="hint" id="hint"></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card"><div class="goal" id="gLoja"></div></div>
+    <div class="card"><div class="goal" id="gPess"></div></div>
+  </div>
+
+  <div class="card">
+    <h2>📊 Resumo do mês</h2>
+    <div class="stats" id="stats"></div>
+  </div>
+
+  <div class="card">
+    <h2>📅 Calendário <span class="hint" style="margin:0">toque em um dia para editar</span></h2>
+    <div class="cal" id="cal"></div>
+    <div class="legend">
+      <span><i style="background:rgba(16,185,129,.5)"></i>Bateu a meta pessoal do dia</span>
+      <span><i style="background:rgba(47,107,255,.5)"></i>Bateu a meta da loja do dia</span>
+      <span><i style="background:rgba(244,63,94,.45)"></i>Abaixo</span>
+      <span><i style="border:1.5px dashed var(--muted)"></i>Sem lançamento</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📈 Acumulado do mês vs. metas</h2>
+    <svg class="chart" id="chartAcc" viewBox="0 0 700 250"></svg>
+    <div class="legend">
+      <span><i style="background:var(--text)"></i>Realizado</span>
+      <span><i style="background:var(--store)"></i>Ritmo da loja</span>
+      <span><i style="background:var(--pers)"></i>Ritmo pessoal</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🗓️ Vendas por dia</h2>
+    <svg class="chart" id="chartDay" viewBox="0 0 700 230"></svg>
+  </div>
+
+  <div class="card">
+    <h2>📌 Semana a semana</h2>
+    <div class="weeks" id="weeks"></div>
+  </div>
+
+  <div class="card">
+    <details>
+      <summary>⚙️ Configurações e backup</summary>
+      <div class="form3">
+        <label>Meta da loja (R$)<input type="number" id="cLoja" min="0" step="100"></label>
+        <label>Meta pessoal (R$)<input type="number" id="cPess" min="0" step="100"></label>
+        <label>Dias de trabalho
+          <select id="cDias"><option value="5">Segunda a sexta</option><option value="6">Segunda a sábado</option></select>
+        </label>
+        <label>Feriados/folgas (AAAA-MM-DD, vírgula)<input type="text" id="cFolgas" placeholder="2026-11-20"></label>
+        <label>Consultor<input type="text" id="cNome"></label>
+      </div>
+      <div class="hint">Meta pessoal = valor por dia × dias úteis (ex.: R$ 5.000 × 23 = R$ 115.000). As metas valem para o mês selecionado e são copiadas para os próximos.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+        <button class="btn sec" id="expCsv" type="button">Exportar CSV</button>
+        <button class="btn sec" id="expJson" type="button">Backup (JSON)</button>
+        <button class="btn sec" id="impJson" type="button">Restaurar backup</button>
+        <input type="file" id="fileJson" accept="application/json" hidden>
+      </div>
+      <div class="hint">Os dados ficam salvos neste navegador. Faça backup de vez em quando.</div>
+    </details>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY='metas-serraf-v2', OLD='metas-serraf-v1';
+const $=id=>document.getElementById(id);
+const brl=v=>(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const pct=v=>(isFinite(v)?v:0).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%';
+const kfmt=v=>v>=1000?(v/1000).toLocaleString('pt-BR',{maximumFractionDigits:1})+'k':Math.round(v).toString();
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const today=()=>iso(new Date());
+
+let db=load();
+function load(){
+  try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.days)return d;}catch(e){}
+  const base={consultor:'Maikon Torres',days:{},goals:{},last:{loja:60000,pessoal:115000,dias:5,folgas:''}};
+  try{ // migra dados da versão anterior (vendas individuais -> total por dia)
+    const o=JSON.parse(localStorage.getItem(OLD));
+    if(o&&o.sales){o.sales.forEach(s=>{base.days[s.date]=(base.days[s.date]||0)+s.value});
+      base.consultor=o.consultor||base.consultor;base.goals=o.goals||{};base.last=o.last||base.last;}
+  }catch(e){}
+  return base;
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){}}
+
+let cur=today().slice(0,7), selected=today();
+const goalsFor=m=>db.goals[m]||(db.goals[m]={...db.last});
+const monthDays=m=>{const[y,mo]=m.split('-').map(Number);return Array.from({length:new Date(y,mo,0).getDate()},(_,i)=>new Date(y,mo-1,i+1))};
+const weekStart=d=>{const x=new Date(d);x.setDate(x.getDate()-((x.getDay()+6)%7));return x};
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),1800)}
+
+function ring(p,c1,c2,id){
+  const r=52,C=2*Math.PI*r,v=Math.min(100,Math.max(0,p));
+  return `<svg width="128" height="128" viewBox="0 0 128 128"><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient></defs>
+  <circle cx="64" cy="64" r="${r}" fill="none" stroke="var(--line)" stroke-width="12"/>
+  <circle cx="64" cy="64" r="${r}" fill="none" stroke="url(#${id})" stroke-width="12" stroke-linecap="round" stroke-dasharray="${C*v/100} ${C}"/></svg>`;
+}
+
+function render(){
+  const g=goalsFor(cur);
+  const folgas=new Set((g.folgas||'').split(',').map(s=>s.trim()).filter(Boolean));
+  const days=monthDays(cur), t=today();
+  const isWork=d=>{const w=d.getDay();return w!==0&&!(w===6&&Number(g.dias)<6)&&!folgas.has(iso(d))};
+  const work=days.filter(isWork);
+  const loja=+g.loja||0,pess=+g.pessoal||0;
+  const val=d=>db.days[iso(d)];
+  const acc=days.reduce((a,d)=>a+(val(d)||0),0);
+
+  const [y,mo]=cur.split('-').map(Number);
+  $('mesLabel').textContent=new Date(y,mo-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  $('who').textContent='Consultor: '+db.consultor;
+
+  const passed=d=>{const k=iso(d);return k<t||(k===t&&db.days[k]!=null)}; // dia "fechado"
+  const elapsed=work.filter(passed).length;
+  const remaining=work.length-elapsed;
+  const dailyL=work.length?loja/work.length:0, dailyP=work.length?pess/work.length:0;
+
+  // metas
+  const faltaL=Math.max(0,loja-acc),faltaP=Math.max(0,pess-acc);
+  const pL=loja?acc/loja*100:0,pP=pess?acc/pess*100:0;
+  const goalHtml=(title,meta,p,falta,c1,c2,id)=>`
+    <div class="ring">${ring(p,c1,c2,id)}<div class="c"><b>${pct(p)}</b><span>da meta</span></div></div>
+    <div class="goal-info"><div class="t">${title}</div><div class="v">${brl(meta)}</div>
+      <div class="kv"><span>Vendido</span><span><b>${brl(acc)}</b></span></div>
+      <div class="kv"><span>Falta</span><span class="${falta?'no':'ok'}">${falta?brl(falta):'Batida! ✅'}</span></div>
+      <div class="kv"><span>Por dia útil restante</span><span>${falta&&remaining?brl(falta/remaining):'—'}</span></div></div>`;
+  $('gLoja').innerHTML=goalHtml('Meta da loja',loja,pL,faltaL,'#2f6bff','#6aa0ff','gr1');
+  $('gPess').innerHTML=goalHtml('Meta pessoal',pess,pP,faltaP,'#10b981','#6ee7b7','gr2');
+
+  // mensagem
+  let m1,m2='';
+  if(acc===0&&elapsed===0){m1='Bora começar o mês! 🚀';m2=`Meta pessoal: ${brl(dailyP)} por dia útil.`}
+  else if(pess&&acc>=pess){m1='🏆 Meta pessoal batida! Parabéns!';m2='Tudo daqui pra frente é bônus.'}
+  else if(loja&&acc>=loja){m1='✅ Meta da loja batida!';m2=`Faltam ${brl(faltaP)} para a meta pessoal${remaining?` (${brl(faltaP/remaining)} por dia útil)`:''}.`}
+  else{m1=`Você está em ${pct(pP)} da meta pessoal 💪`;m2=remaining?`Faltam ${brl(faltaL)} para a loja e ${brl(faltaP)} para a pessoal — ${remaining} dia${remaining>1?'s':''} útil${remaining>1?'eis':''} pela frente.`:'Mês encerrado.'}
+  $('msg').innerHTML=`${m1}<small>${m2}</small>`;
+
+  // stats
+  const media=elapsed?acc/elapsed:0;
+  const proj=elapsed?media*work.length:0;
+  const filled=days.filter(d=>val(d)!=null);
+  const best=filled.reduce((b,d)=>(val(d)>(b?val(b):-1)?d:b),null);
+  const hitP=work.filter(d=>(val(d)||0)>=dailyP&&dailyP>0).length;
+  const stat=(l,n,c='')=>`<div class="stat"><div class="l">${l}</div><div class="n ${c}">${n}</div></div>`;
+  $('stats').innerHTML=
+    stat('Média por dia útil',brl(media))+
+    stat('Projeção no ritmo atual',brl(proj),proj>=pess?'ok':proj>=loja?'':'no')+
+    stat('Melhor dia',best?`${brl(val(best))} (${pad(best.getDate())}/${pad(best.getMonth()+1)})`:'—')+
+    stat('Dias acima da meta pessoal',`${hitP} de ${elapsed}`)+
+    stat('Meta diária da loja',brl(dailyL))+
+    stat('Meta diária pessoal',brl(dailyP))+
+    stat('Dias úteis (feitos / total)',`${elapsed} / ${work.length}`)+
+    stat('Projeção vs. meta pessoal',pct(pess?proj/pess*100:0),proj>=pess?'ok':'no');
+
+  // calendário
+  let cal=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'].map(x=>`<div class="dow">${x}</div>`).join('');
+  const lead=(days[0].getDay()+6)%7;
+  for(let i=0;i<lead;i++)cal+='<div class="day empty"></div>';
+  days.forEach(d=>{
+    const k=iso(d),v=db.days[k],w=isWork(d);let c='day';
+    if(!w&&v==null)c+=' off';
+    else if(v!=null){c+=v>=dailyP&&dailyP>0?' gold':v>=dailyL&&dailyL>0?' good':' low'}
+    else if(k<=t)c+=' miss';
+    if(k===t)c+=' today';if(k===selected)c+=' sel';
+    cal+=`<div class="${c}" data-d="${k}"><span class="d">${d.getDate()}</span><span class="val">${v!=null?kfmt(v):''}</span></div>`;
+  });
+  $('cal').innerHTML=cal;
+
+  // gráfico acumulado
+  chartAcc(days,work,isWork,loja,pess,acc,t);
+  chartDay(days,isWork,dailyL,dailyP,t);
+
+  // semanas
+  const wk=new Map();
+  days.forEach(d=>{const k=iso(weekStart(d));if(!wk.has(k))wk.set(k,{a:d,b:d,n:0,s:0});const w=wk.get(k);w.b=d;if(isWork(d))w.n++;w.s+=val(d)||0});
+  let wh='';
+  wk.forEach(w=>{
+    const ml=dailyL*w.n,mp=dailyP*w.n,cur_=t>=iso(w.a)&&t<=iso(w.b);
+    const bp=mp?Math.min(100,w.s/mp*100):0,bl=ml?Math.min(100,w.s/ml*100):0;
+    wh+=`<div class="wk"><div class="wk-top"><span><b>${pad(w.a.getDate())}/${pad(w.a.getMonth()+1)} – ${pad(w.b.getDate())}/${pad(w.b.getMonth()+1)}</b>${cur_?'<span class="tag">atual</span>':''} · ${w.n} dias úteis</span><span><b>${brl(w.s)}</b></span></div>
+      <div class="kv"><span>Loja ${brl(ml)}</span><span class="${w.s>=ml&&ml?'ok':''}">${pct(ml?w.s/ml*100:0)}</span></div>
+      <div class="bar"><div style="width:${bl}%;background:linear-gradient(90deg,#2f6bff,#6aa0ff)"></div></div>
+      <div class="kv"><span>Pessoal ${brl(mp)}</span><span class="${w.s>=mp&&mp?'ok':''}">${pct(mp?w.s/mp*100:0)}</span></div>
+      <div class="bar"><div style="width:${bp}%;background:linear-gradient(90deg,#10b981,#6ee7b7)"></div></div></div>`;
+  });
+  $('weeks').innerHTML=wh;
+
+  // config
+  $('cLoja').value=g.loja;$('cPess').value=g.pessoal;$('cDias').value=String(g.dias);$('cFolgas').value=g.folgas||'';$('cNome').value=db.consultor;
+  updateHint();
+}
+
+function chartAcc(days,work,isWork,loja,pess,acc,t){
+  const W=700,H=250,L=44,R=12,T=14,B=26,n=days.length;
+  const X=i=>L+(W-L-R)*i/(n-1||1);
+  const ymax=Math.max(loja,pess,acc,1)*1.08,Y=v=>T+(H-T-B)*(1-v/ymax);
+  const wl=work.length||1;
+  let cw=0;const idealL=[],idealP=[],real=[];let run=0,last=-1;
+  days.forEach((d,i)=>{
+    if(isWork(d))cw++;
+    idealL.push([X(i),Y(loja*cw/wl)]);idealP.push([X(i),Y(pess*cw/wl)]);
+    run+=db.days[iso(d)]||0;
+    if(iso(d)<=t||db.days[iso(d)]!=null){real.push([X(i),Y(run)]);last=i}
+  });
+  const pts=a=>a.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+  let s='';
+  for(let k=0;k<=4;k++){const v=ymax*k/4,y=Y(v);s+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${L-6}" y="${y+3}" text-anchor="end">${kfmt(v)}</text>`}
+  [1,Math.ceil(n/4),Math.ceil(n/2),Math.ceil(3*n/4),n].forEach(d=>{s+=`<text x="${X(d-1)}" y="${H-8}" text-anchor="middle">${d}</text>`});
+  s+=`<polyline points="${pts(idealL)}" fill="none" stroke="var(--store)" stroke-width="2" stroke-dasharray="5 4"/>`;
+  s+=`<polyline points="${pts(idealP)}" fill="none" stroke="var(--pers)" stroke-width="2" stroke-dasharray="5 4"/>`;
+  if(real.length){
+    s+=`<polygon points="${L},${Y(0)} ${pts(real)} ${real[real.length-1][0]},${Y(0)}" fill="var(--text)" opacity=".07"/>`;
+    s+=`<polyline points="${pts(real)}" fill="none" stroke="var(--text)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>`;
+    const e=real[real.length-1];s+=`<circle cx="${e[0]}" cy="${e[1]}" r="5" fill="var(--text)"/>`;
+  }
+  $('chartAcc').innerHTML=s;
+}
+
+function chartDay(days,isWork,dL,dP,t){
+  const W=700,H=230,L=44,R=12,T=14,B=26,n=days.length;
+  const vals=days.map(d=>db.days[iso(d)]||0);
+  const ymax=Math.max(...vals,dP,dL,1)*1.15,Y=v=>T+(H-T-B)*(1-v/ymax);
+  const bw=(W-L-R)/n;let s='';
+  for(let k=0;k<=4;k++){const v=ymax*k/4,y=Y(v);s+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${L-6}" y="${y+3}" text-anchor="end">${kfmt(v)}</text>`}
+  days.forEach((d,i)=>{
+    const v=db.days[iso(d)],x=L+i*bw;
+    if(v!=null&&v>0){
+      const col=v>=dP&&dP>0?'var(--pers)':v>=dL&&dL>0?'var(--store)':'var(--low)';
+      s+=`<rect x="${x+bw*.15}" y="${Y(v)}" width="${bw*.7}" height="${Y(0)-Y(v)}" rx="3" fill="${col}"/>`;
+    }
+    if(n<=31&&(i===0||(i+1)%5===0))s+=`<text x="${x+bw/2}" y="${H-8}" text-anchor="middle">${i+1}</text>`;
+  });
+  s+=`<line x1="${L}" x2="${W-R}" y1="${Y(dP)}" y2="${Y(dP)}" stroke="var(--pers)" stroke-width="1.5" stroke-dasharray="5 4"/>`;
+  s+=`<line x1="${L}" x2="${W-R}" y1="${Y(dL)}" y2="${Y(dL)}" stroke="var(--store)" stroke-width="1.5" stroke-dasharray="5 4"/>`;
+  $('chartDay').innerHTML=s;
+}
+
+function updateHint(){
+  const d=$('fData').value,v=db.days[d];
+  $('hint').innerHTML=v!=null
+    ?`Já existe lançamento neste dia: <b>${brl(v)}</b>. Salvar de novo substitui o valor. <button class="linkbtn" type="button" id="clearDay">Apagar este dia</button>`
+    :'Digite o total vendido no dia e toque em Salvar.';
+  const b=$('clearDay');if(b)b.onclick=()=>{if(confirm('Apagar o lançamento deste dia?')){delete db.days[d];save();$('fValor').value='';render();toast('Dia apagado')}};
+}
+function selectDate(k){
+  selected=k;$('fData').value=k;
+  const v=db.days[k];$('fValor').value=v!=null?v:'';
+  cur=k.slice(0,7);render();
+}
+
+$('form').onsubmit=e=>{
+  e.preventDefault();
+  const d=$('fData').value,v=parseFloat($('fValor').value);
+  if(!d||!(v>=0))return;
+  db.days[d]=v;save();selected=d;cur=d.slice(0,7);render();toast('Salvo! ✅');
+  $('fValor').blur();
+};
+$('fData').onchange=()=>{const k=$('fData').value;if(!k)return;selected=k;const v=db.days[k];$('fValor').value=v!=null?v:'';cur=k.slice(0,7);render()};
+$('cal').onclick=e=>{const el=e.target.closest('.day');if(!el||!el.dataset.d)return;selectDate(el.dataset.d);$('fValor').focus();window.scrollTo({top:0,behavior:'smooth'})};
+$('prev').onclick=()=>shift(-1);$('next').onclick=()=>shift(1);
+function shift(n){const[y,m]=cur.split('-').map(Number);const d=new Date(y,m-1+n,1);cur=`${d.getFullYear()}-${pad(d.getMonth()+1)}`;render()}
+
+function setGoal(k,v){const g=goalsFor(cur);g[k]=v;db.last={...g};save();render()}
+$('cLoja').onchange=e=>setGoal('loja',+e.target.value||0);
+$('cPess').onchange=e=>setGoal('pessoal',+e.target.value||0);
+$('cDias').onchange=e=>setGoal('dias',+e.target.value);
+$('cFolgas').onchange=e=>setGoal('folgas',e.target.value);
+$('cNome').onchange=e=>{db.consultor=e.target.value.trim()||db.consultor;save();render()};
+
+function download(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();URL.revokeObjectURL(a.href)}
+$('expCsv').onclick=()=>{
+  const lines=['data;valor'];
+  Object.keys(db.days).filter(k=>k.startsWith(cur)).sort().forEach(k=>lines.push(k+';'+String(db.days[k]).replace('.',',')));
+  download(`vendas-${cur}.csv`,'\ufeff'+lines.join('\n'),'text/csv;charset=utf-8');
+};
+$('expJson').onclick=()=>download(`backup-metas-${today()}.json`,JSON.stringify(db,null,2),'application/json');
+$('impJson').onclick=()=>$('fileJson').click();
+$('fileJson').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);if(!d||typeof d.days!=='object')throw 0;
+    if(confirm('Isso substitui os dados atuais pelo backup. Continuar?')){db=d;save();render();toast('Backup restaurado')}}
+    catch(err){alert('Arquivo de backup inválido.')}};
+  r.readAsText(f);e.target.value='';
+};
+
+$('fData').value=today();
+render();
+</script>
+</body>
+</html>
